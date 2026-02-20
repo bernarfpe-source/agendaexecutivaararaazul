@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agenda Rio Novo</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Syne', sans-serif;
+  min-height: 100vh;
+  padding: 24px;
+  transition: background .25s, color .25s;
+}
+
+/* ── TEMAS ── */
+body.dark {
+  background: #080C14;
+  color: #E8F0FF;
+  --bg: #080C14;
+  --surface: #0D1520;
+  --border: #1E2D42;
+  --text: #E8F0FF;
+  --muted: #4A6080;
+  --input-bg: #080C14;
+  --grad: radial-gradient(ellipse 60% 40% at 80% 10%, rgba(0,89,255,0.07) 0%, transparent 70%),
+          radial-gradient(ellipse 40% 30% at 10% 80%, rgba(0,229,160,0.05) 0%, transparent 70%);
+}
+body.light {
+  background: #F0F4F8;
+  color: #0F1B2D;
+  --bg: #F0F4F8;
+  --surface: #FFFFFF;
+  --border: #D0DAE8;
+  --text: #0F1B2D;
+  --muted: #7A8FA8;
+  --input-bg: #F8FAFC;
+  --grad: radial-gradient(ellipse 60% 40% at 80% 10%, rgba(0,89,255,0.04) 0%, transparent 70%),
+          radial-gradient(ellipse 40% 30% at 10% 80%, rgba(0,180,140,0.04) 0%, transparent 70%);
+}
+body { background-image: var(--grad); }
+
+.wrap { max-width: 1100px; margin: 0 auto; }
+
+/* HEADER */
+.header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-bottom: 20px; border-bottom: 1px solid var(--border); margin-bottom: 28px;
+}
+.header-left { display: flex; align-items: center; gap: 14px; }
+.logo {
+  width: 42px; height: 42px; background: #00B87A; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px; font-weight: 800; color: #fff;
+}
+.header h1 { font-size: 20px; font-weight: 800; letter-spacing: -.3px; }
+.header h1 span { color: #00B87A; }
+.header-sub { font-size: 11px; color: var(--muted); font-family: monospace; margin-top: 2px; }
+.header-right { display: flex; align-items: center; gap: 10px; }
+.clock-badge {
+  font-family: monospace; font-size: 11px; color: var(--muted);
+  background: var(--surface); padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border);
+}
+.btn-theme {
+  display: flex; align-items: center; gap: 7px;
+  padding: 7px 16px; border-radius: 20px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text); cursor: pointer;
+  font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700; transition: all .2s;
+}
+
+/* STATS */
+.stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 24px; }
+.stat {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 18px 20px;
+}
+.stat-label { font-size: 10px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; font-family: monospace; }
+.stat-val { font-size: 32px; font-weight: 800; letter-spacing: -1px; }
+.stat.green { border-top: 2px solid #00B87A; } .stat.green .stat-val { color: #00B87A; }
+.stat.blue  { border-top: 2px solid #3B82F6; } .stat.blue  .stat-val { color: #3B82F6; }
+.stat.red   { border-top: 2px solid #E8294A; } .stat.red   .stat-val { color: #E8294A; }
+
+/* MAIN GRID */
+.main { display: grid; grid-template-columns: 320px 1fr; gap: 20px; }
+
+/* FORM PANEL */
+.panel {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+  padding: 24px; height: fit-content; position: sticky; top: 24px;
+}
+.panel-title {
+  font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+  color: #00B87A; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;
+}
+.dot { width: 6px; height: 6px; background: #00B87A; border-radius: 50%; box-shadow: 0 0 8px #00B87A; }
+.field { margin-bottom: 14px; }
+.field label {
+  display: block; font-size: 10px; letter-spacing: 1.5px; color: var(--muted);
+  text-transform: uppercase; margin-bottom: 6px; font-family: monospace;
+}
+.field input, .field textarea {
+  width: 100%; background: var(--input-bg); border: 1px solid var(--border);
+  border-radius: 8px; padding: 11px 14px; color: var(--text);
+  font-family: 'Syne', sans-serif; font-size: 13px; outline: none; text-transform: uppercase;
+  transition: border-color .2s;
+}
+.field input:focus, .field textarea:focus { border-color: #00B87A; }
+.field textarea { resize: vertical; min-height: 70px; }
+body.dark input[type=date]::-webkit-calendar-picker-indicator { filter: invert(1); }
+
+.prio-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.prio-btn {
+  padding: 9px 0; border: 1px solid var(--border); border-radius: 7px;
+  background: transparent; color: var(--muted); font-family: 'Syne', sans-serif;
+  font-size: 11px; font-weight: 700; cursor: pointer; transition: all .2s;
+}
+.prio-btn.active-low  { border-color: #00B87A; background: rgba(0,184,122,0.1);  color: #00B87A; }
+.prio-btn.active-med  { border-color: #D48800; background: rgba(212,136,0,0.1);  color: #D48800; }
+.prio-btn.active-high { border-color: #E8294A; background: rgba(232,41,74,0.1); color: #E8294A; }
+
+.btn-save {
+  width: 100%; padding: 14px; background: #00B87A; color: #fff; border: none;
+  border-radius: 10px; font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 800;
+  letter-spacing: 1.5px; text-transform: uppercase; cursor: pointer; margin-top: 4px;
+  transition: background .2s, transform .1s;
+}
+.btn-save:hover { background: #00d68f; transform: translateY(-1px); }
+.btn-save:active { transform: translateY(0); }
+
+/* LIST */
+.list-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.list-title { font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
+.search {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 9px 14px; color: var(--text); font-family: monospace; font-size: 12px;
+  outline: none; width: 180px;
+}
+.search:focus { border-color: #00B87A; }
+
+.section-date {
+  font-family: monospace; font-size: 10px; color: var(--muted); letter-spacing: 2px;
+  text-transform: uppercase; padding: 6px 0; margin-bottom: 6px; margin-top: 10px;
+  border-bottom: 1px solid var(--border);
+}
+.section-date:first-child { margin-top: 0; }
+
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 16px 18px; margin-bottom: 10px;
+  display: grid; grid-template-columns: 4px 1fr auto; gap: 14px; align-items: start;
+  transition: border-color .2s, transform .15s;
+}
+.card:hover { border-color: rgba(0,184,122,0.25); transform: translateX(2px); }
+.card-stripe { border-radius: 4px; }
+.card-name { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+.meta-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 4px; }
+.pill {
+  font-family: monospace; font-size: 10px; padding: 3px 9px;
+  border-radius: 20px; border: 1px solid var(--border); color: var(--muted); background: transparent;
+}
+.pill-urgent { border-color: rgba(232,41,74,0.4);  color: #E8294A; background: rgba(232,41,74,0.1); }
+.pill-today  { border-color: rgba(212,136,0,0.4);  color: #D48800; background: rgba(212,136,0,0.1); }
+.pill-low    { border-color: rgba(0,184,122,0.4);  color: #00B87A; background: rgba(0,184,122,0.1); }
+.pill-med    { border-color: rgba(212,136,0,0.4);  color: #D48800; background: rgba(212,136,0,0.1); }
+.pill-high   { border-color: rgba(232,41,74,0.4);  color: #E8294A; background: rgba(232,41,74,0.1); }
+.card-obs { font-size: 12px; color: var(--muted); margin-top: 6px; font-style: italic; line-height: 1.5; }
+.card-actions { display: flex; flex-direction: column; gap: 7px; align-items: flex-end; }
+.btn-wa {
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(37,211,102,0.12); border: 1px solid rgba(37,211,102,0.3); color: #25D366;
+  padding: 7px 12px; border-radius: 7px; font-family: 'Syne', sans-serif; font-size: 11px;
+  font-weight: 600; text-decoration: none; white-space: nowrap; cursor: pointer; transition: background .2s;
+}
+.btn-wa:hover { background: rgba(37,211,102,0.22); }
+.btn-del {
+  display: flex; align-items: center; gap: 5px;
+  background: transparent; border: 1px solid var(--border); color: var(--muted);
+  padding: 6px 12px; border-radius: 7px; font-family: 'Syne', sans-serif; font-size: 11px;
+  cursor: pointer; white-space: nowrap; transition: all .2s;
+}
+.btn-del:hover { border-color: #E8294A; color: #E8294A; background: rgba(232,41,74,0.07); }
+
+.empty {
+  background: var(--surface); border: 1px dashed var(--border); border-radius: 16px;
+  padding: 50px 20px; text-align: center; color: var(--muted);
+}
+.empty-icon { font-size: 36px; margin-bottom: 12px; opacity: .4; }
+.empty p { font-size: 13px; letter-spacing: .5px; }
+
+/* TOAST */
+.toast {
+  position: fixed; bottom: 28px; right: 28px;
+  background: #00B87A; color: #fff; padding: 13px 22px; border-radius: 10px;
+  font-weight: 700; font-size: 13px; opacity: 0; transform: translateY(10px);
+  transition: all .3s; z-index: 999; pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+
+@media (max-width: 768px) {
+  .main { grid-template-columns: 1fr; }
+  .stats { grid-template-columns: 1fr 1fr; }
+  .panel { position: static; }
+  .header { flex-direction: column; align-items: flex-start; gap: 10px; }
+}
+</style>
+</head>
+<body class="dark">
+<div class="wrap">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <div class="logo">RN</div>
+      <div>
+        <h1>AGENDA <span>RIO NOVO</span></h1>
+        <div class="header-sub">SISTEMA OPERACIONAL DE COMPROMISSOS</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="clock-badge" id="clock">--/--/---- · --:--:--</div>
+      <button class="btn-theme" onclick="toggleTheme()" id="theme-btn">
+        ☀️ CLARO
+      </button>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat green"><div class="stat-label">Total Agendado</div><div class="stat-val" id="stat-total">0</div></div>
+    <div class="stat blue"> <div class="stat-label">Próximos 7 dias</div><div class="stat-val" id="stat-week">0</div></div>
+    <div class="stat red">  <div class="stat-label">Urgentes / Vencidos</div><div class="stat-val" id="stat-urg">0</div></div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- FORM -->
+    <div class="panel">
+      <div class="panel-title"><div class="dot"></div> Novo Agendamento</div>
+
+      <div class="field">
+        <label>Descrição do trabalho *</label>
+        <input type="text" id="inp-tarefa" placeholder="EX: MANUTENÇÃO CARRO 1010">
+      </div>
+      <div class="field">
+        <label>Data do compromisso *</label>
+        <input type="date" id="inp-data">
+      </div>
+      <div class="field">
+        <label>WhatsApp (55 + DDD + número) *</label>
+        <input type="text" id="inp-fone" placeholder="5561999999999" maxlength="15">
+      </div>
+      <div class="field">
+        <label>Observação / Detalhe</label>
+        <textarea id="inp-obs" placeholder="DETALHES ADICIONAIS (OPCIONAL)"></textarea>
+      </div>
+      <div class="field">
+        <label>Prioridade</label>
+        <div class="prio-row">
+          <button class="prio-btn active-low" onclick="setPrio('low',this)">🟢 BAIXA</button>
+          <button class="prio-btn" onclick="setPrio('med',this)">🟡 MÉDIA</button>
+          <button class="prio-btn" onclick="setPrio('high',this)">🔴 URGENTE</button>
+        </div>
+      </div>
+      <button class="btn-save" onclick="salvar()">+ SALVAR AGENDAMENTO</button>
+    </div>
+
+    <!-- LIST -->
+    <div>
+      <div class="list-header">
+        <div class="list-title">Compromissos</div>
+        <input class="search" type="text" id="inp-busca" placeholder="Buscar..." oninput="renderizar()">
+      </div>
+      <div id="lista"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const KEY = 'AGENDA_RIO_NOVO_v2';
+let prioAtual = 'low';
+let isDark = true;
+
+function getDados(){ try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch { return []; } }
+function setDados(d){ localStorage.setItem(KEY, JSON.stringify(d)); }
+
+function diasPara(ds){
+  const h=new Date(); h.setHours(0,0,0,0);
+  return Math.round((new Date(ds+'T00:00:00')-h)/86400000);
+}
+function fmtData(ds){
+  if(!ds) return '';
+  const [y,m,d]=ds.split('-'); return `${d}/${m}/${y}`;
+}
+
+/* ── CLOCK ── */
+setInterval(()=>{
+  const n=new Date(), p=v=>String(v).padStart(2,'0');
+  document.getElementById('clock').textContent=
+    `${p(n.getDate())}/${p(n.getMonth()+1)}/${n.getFullYear()} · ${p(n.getHours())}:${p(n.getMinutes())}:${p(n.getSeconds())}`;
+},1000);
+
+/* ── TEMA ── */
+function toggleTheme(){
+  isDark=!isDark;
+  document.body.className = isDark?'dark':'light';
+  document.getElementById('theme-btn').textContent = isDark?'☀️ CLARO':'🌙 ESCURO';
+}
+
+/* ── PRIORIDADE ── */
+function setPrio(val, el){
+  prioAtual=val;
+  document.querySelectorAll('.prio-btn').forEach(b=>{ b.className='prio-btn'; });
+  el.classList.add('active-'+val);
+}
+
+/* ── TOAST ── */
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+/* ── SALVAR ── */
+function salvar(){
+  const tarefa = document.getElementById('inp-tarefa').value.trim().toUpperCase();
+  const data   = document.getElementById('inp-data').value;
+  const fone   = document.getElementById('inp-fone').value.trim().replace(/\D/g,'');
+  const obs    = document.getElementById('inp-obs').value.trim().toUpperCase();
+
+  if(!tarefa||!data||!fone){ toast('⚠ PREENCHA TODOS OS CAMPOS OBRIGATÓRIOS'); return; }
+  if(fone.length<10){ toast('⚠ NÚMERO DE TELEFONE INVÁLIDO'); return; }
+
+  const dados = getDados();
+  dados.push({tarefa,data,fone,obs,prio:prioAtual});
+  setDados(dados);
+
+  document.getElementById('inp-tarefa').value='';
+  document.getElementById('inp-data').value='';
+  document.getElementById('inp-fone').value='';
+  document.getElementById('inp-obs').value='';
+  setPrio('low', document.querySelector('.prio-btn'));
+
+  toast('✓ AGENDAMENTO SALVO COM SUCESSO');
+  renderizar();
+}
+
+/* ── APAGAR ── */
+function apagar(idx){
+  if(!confirm('EXCLUIR ESTE AGENDAMENTO?')) return;
+  const dados=getDados(); dados.splice(idx,1); setDados(dados);
+  toast('REGISTRO EXCLUÍDO'); renderizar();
+}
+
+/* ── RENDERIZAR ── */
+function renderizar(){
+  const dados = getDados();
+  const busca = document.getElementById('inp-busca').value.toLowerCase();
+
+  // stats
+  const em7 = dados.filter(i=>{ const d=diasPara(i.data); return d>=0&&d<=7; }).length;
+  const urg  = dados.filter(i=>diasPara(i.data)<0||i.prio==='high').length;
+  document.getElementById('stat-total').textContent = dados.length;
+  document.getElementById('stat-week').textContent  = em7;
+  document.getElementById('stat-urg').textContent   = urg;
+
+  const filtrados = dados
+    .map((item,i)=>({...item,origIdx:i}))
+    .filter(i=>!busca||i.tarefa.toLowerCase().includes(busca)||(i.obs||'').toLowerCase().includes(busca))
+    .sort((a,b)=>a.data.localeCompare(b.data));
+
+  const lista = document.getElementById('lista');
+
+  if(!filtrados.length){
+    lista.innerHTML=`<div class="empty"><div class="empty-icon">📋</div><p>NENHUM COMPROMISSO ENCONTRADO</p></div>`;
+    return;
+  }
+
+  const prioCol = {low:'#00B87A', med:'#D48800', high:'#E8294A'};
+  let lastDate='', html='';
+
+  filtrados.forEach(item=>{
+    const dias = diasPara(item.data);
+    const label = dias<0 ? `VENCIDO HÁ ${Math.abs(dias)}D` : dias===0?'HOJE':dias===1?'AMANHÃ':`EM ${dias} DIAS`;
+    const statusCls = dias<0?'pill-urgent': dias<=1?'pill-today':'';
+    const prioCls = 'pill-'+item.prio;
+    const prioLabel = item.prio==='high'?'🔴 URGENTE': item.prio==='med'?'🟡 MÉDIA':'🟢 BAIXA';
+    const sc = prioCol[item.prio]||'#00B87A';
+    const msg = encodeURIComponent(`📋 AVISO OPERACIONAL\nTAREFA: ${item.tarefa}\n${item.obs?'DETALHE: '+item.obs+'\n':''}PRAZO: ${fmtData(item.data)}\n\nSISTEMA AGENDA RIO NOVO`);
+    const link = `https://wa.me/${item.fone}?text=${msg}`;
+
+    if(item.data!==lastDate){
+      html+=`<div class="section-date">${fmtData(item.data)}</div>`;
+      lastDate=item.data;
+    }
+
+    html+=`
+    <div class="card">
+      <div class="card-stripe" style="background:${sc}"></div>
+      <div>
+        <div class="card-name">${item.tarefa}</div>
+        <div class="meta-row">
+          <span class="pill ${statusCls}">${label}</span>
+          <span class="pill">${item.fone}</span>
+          <span class="pill ${prioCls}">${prioLabel}</span>
+        </div>
+        ${item.obs?`<div class="card-obs">${item.obs}</div>`:''}
+      </div>
+      <div class="card-actions">
+        <a href="${link}" target="_blank" class="btn-wa">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.55 4.117 1.516 5.849L.057 23.886a.5.5 0 0 0 .609.61l6.102-1.48A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.6a9.555 9.555 0 0 1-4.868-1.332l-.349-.207-3.622.878.904-3.55-.228-.364A9.555 9.555 0 0 1 2.4 12C2.4 6.698 6.698 2.4 12 2.4S21.6 6.698 21.6 12 17.302 21.6 12 21.6z"/></svg>
+          WHATSAPP
+        </a>
+        <button class="btn-del" onclick="apagar(${item.origIdx})">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+          EXCLUIR
+        </button>
+      </div>
+    </div>`;
+  });
+
+  lista.innerHTML=html;
+}
+
+window.onload = renderizar;
+</script>
+</body>
+</html>
