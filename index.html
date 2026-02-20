@@ -10,6 +10,12 @@
 body{font-family:'Plus Jakarta Sans',sans-serif;min-height:100vh;padding:24px;transition:background .3s,color .3s;}
 body.dark{background:#060B14;color:#E4EEFF;--bg:#060B14;--s1:#0B1628;--s2:#0F1E35;--border:#1A2D45;--text:#E4EEFF;--muted:#3D5A7A;--ibg:#060B14;--shadow:rgba(0,0,0,.4);}
 body.light{background:#EEF2F8;color:#0A1628;--bg:#EEF2F8;--s1:#FFFFFF;--s2:#F4F7FC;--border:#C8D5E8;--text:#0A1628;--muted:#6B88A8;--ibg:#F8FAFD;--shadow:rgba(0,0,0,.08);}
+body.light .fi,body.light .ei,body.light .search,body.light select.fi,body.light select.ei{color:#0A1628!important;background:#F8FAFD!important;}
+body.light .bname,body.light .cname,body.light .ltitle,body.light .ptitle,body.light .stat-lbl,body.light .chart-title,body.light .cal-title{color:#0A1628;}
+body.light .btn-sm{color:#0A1628;background:#FFFFFF;}
+body.light .pb,body.light .sbtn,body.light .sil,body.light .fb{color:#6B88A8;}
+body.light .vtab:not(.active){color:#6B88A8;}
+body.light .cal-dow{color:#6B88A8;}
 body.dark{background-image:radial-gradient(ellipse 70% 50% at 90% 0%,rgba(0,102,255,.06) 0%,transparent 60%),radial-gradient(ellipse 50% 40% at 5% 90%,rgba(0,212,160,.05) 0%,transparent 60%);}
 
 .wrap{max-width:1200px;margin:0 auto;}
@@ -253,8 +259,8 @@ body.dark input[type=date]::-webkit-calendar-picker-indicator{filter:invert(1);}
   </div>
   <div class="hright">
     <div class="clock" id="clock">--/--/---- · --:--:--</div>
-    <button class="btn-sm" onclick="toggleTheme()" id="btn-theme">☀️ CLARO</button>
-    <button class="btn-sm" onclick="exportarPDF()">📄 EXPORTAR</button>
+    <button class="btn-sm" onclick="toggleTheme()" id="btn-theme">&#9728; CLARO</button>
+    <button class="btn-sm" onclick="exportarPDF()"> EXPORTAR</button>
   </div>
 </div>
 
@@ -426,8 +432,8 @@ let calAno=new Date().getFullYear(), calMes=new Date().getMonth();
 
 const PC={low:'#00D4A0',med:'#FFB800',high:'#FF3B5C'};
 const SC={pend:'#FFB800',prog:'#0066FF',conc:'#00D4A0',canc:'#FF3B5C'};
-const SL={pend:'⏳ PENDENTE',prog:'⚙️ ANDAMENTO',conc:'✅ CONCLUÍDO',canc:'❌ CANCELADO'};
-const PL={low:'🟢 BAIXA',med:'🟡 MÉDIA',high:'🔴 URGENTE'};
+const SL={pend:'PENDENTE',prog:'ANDAMENTO',conc:'CONCLUIDO',canc:'CANCELADO'};
+const PL={low:'BAIXA',med:'MEDIA',high:'URGENTE'};
 
 function get(){try{return JSON.parse(localStorage.getItem(KEY))||[];}catch{return[];}}
 function set(d){localStorage.setItem(KEY,JSON.stringify(d));}
@@ -438,7 +444,13 @@ function fmt(ds){if(!ds)return'';const[y,m,d]=ds.split('-');return`${d}/${m}/${y
 setInterval(()=>{const n=new Date(),p=v=>String(v).padStart(2,'0');document.getElementById('clock').textContent=`${p(n.getDate())}/${p(n.getMonth()+1)}/${n.getFullYear()} · ${p(n.getHours())}:${p(n.getMinutes())}:${p(n.getSeconds())}`;},1000);
 
 /* TEMA */
-function toggleTheme(){isDark=!isDark;document.body.className=isDark?'dark':'light';document.getElementById('btn-theme').textContent=isDark?'☀️ CLARO':'🌙 ESCURO';}
+function toggleTheme(){
+  isDark=!isDark;
+  document.body.className=isDark?'dark':'light';
+  document.getElementById('btn-theme').innerHTML=isDark?'&#9728; CLARO':'&#9790; ESCURO';
+  // re-render
+  render();
+}
 
 /* VIEW */
 function setView(v,el){
@@ -458,7 +470,7 @@ function setF(tipo,val,el){
   if(tipo==='data')fData=val;
   // reset siblings in group
   const allFbs=document.querySelectorAll('.filtros .fb');
-  // just toggle active on clicked one within its group — simpler approach:
+  // toggle active
   if(tipo==='status'){document.querySelectorAll('.filtros .fb').forEach(b=>{if(['todos','pend','prog','conc','canc'].some(x=>b.textContent.includes(x.slice(0,3))||b.onclick?.toString().includes(`'status','${x}'`))b.classList.remove('active');});}
   if(tipo==='prio'){document.querySelectorAll('.filtros .fb').forEach(b=>{if(b.onclick?.toString().includes("'prio'"))b.classList.remove('active');});}
   if(tipo==='data'){document.querySelectorAll('.filtros .fb').forEach(b=>{if(b.onclick?.toString().includes("'data'"))b.classList.remove('active');});}
@@ -482,7 +494,7 @@ function checarNotif(){
     nb.classList.add('show');
     document.getElementById('notif-lista').innerHTML=urg.map(i=>{
       const d=dias(i.data);
-      return`<div class="notif-item">• ${i.tarefa}${i.resp?' ('+i.resp+')':''} — <strong>${d<0?`Vencido há ${Math.abs(d)}d`:d===0?'HOJE':'AMANHÃ'}</strong></div>`;
+      return`<div class="notif-item">- ${i.tarefa}${i.resp?' ('+i.resp+')':''} - <strong>${d<0?`Vencido há ${Math.abs(d)}d`:d===0?'HOJE':'AMANHÃ'}</strong></div>`;
     }).join('');
   }else nb.classList.remove('show');
 }
@@ -494,25 +506,25 @@ function salvar(){
   const d=document.getElementById('i-data').value;
   const f=document.getElementById('i-fone').value.trim().replace(/\D/g,'');
   const o=document.getElementById('i-obs').value.trim().toUpperCase();
-  if(!t||!r||!d||!f){toast('⚠ Preencha todos os campos obrigatórios','err');return;}
-  if(f.length<10){toast('⚠ Número de telefone inválido','err');return;}
+  if(!t||!r||!d||!f){toast('Preencha todos os campos obrigatorios','err');return;}
+  if(f.length<10){toast('Numero de telefone invalido','err');return;}
   const novo=[...get(),{tarefa:t,resp:r,data:d,fone:f,obs:o,prio:prioAtual,status:statusAtual,criado:new Date().toISOString()}];
   set(novo);
   document.getElementById('i-tar').value='';document.getElementById('i-resp').value='';
   document.getElementById('i-data').value='';document.getElementById('i-fone').value='';document.getElementById('i-obs').value='';
   setPrio('low',document.querySelector('.pb'));
   setStatus('pend',document.querySelector('.sbtn'));
-  toast('✓ Agendamento salvo!','ok'); render();
+  toast('Agendamento salvo!','ok'); render();
 }
 
 /* MUDAR STATUS INLINE */
 function mudarStatus(idx,s){
   const dados=get(); dados[idx].status=s; set(dados);
-  toast(`Status → ${SL[s]}`,'info'); render();
+  toast('Status atualizado!','info'); render();
 }
 
 /* APAGAR */
-function apagar(idx){if(!confirm('Excluir?'))return;const d=get();d.splice(idx,1);set(d);toast('Excluído','info');render();}
+function apagar(idx){if(!confirm('Excluir?'))return;const d=get();d.splice(idx,1);set(d);toast('Excluido','info');render();}
 
 /* EDITAR */
 function toggleEdit(idx){
@@ -530,9 +542,9 @@ function confirmarEdit(idx){
   const o=document.getElementById('eo-'+idx).value.trim().toUpperCase();
   const p=document.getElementById('ep-'+idx).value;
   const s=document.getElementById('es-'+idx).value;
-  if(!t||!r||!d||!f){toast('⚠ Preencha todos os campos','err');return;}
+  if(!t||!r||!d||!f){toast('Preencha todos os campos','err');return;}
   dados[idx]={...dados[idx],tarefa:t,resp:r,data:d,fone:f,obs:o,prio:p,status:s};
-  set(dados); toast('✓ Atualizado!','ok'); render();
+  set(dados); toast('Atualizado!','ok'); render();
 }
 
 /* EXPORTAR */
@@ -543,14 +555,14 @@ function exportarPDF(){
   const w=window.open('','_blank');
   w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Agenda Rio Novo</title><style>body{font-family:sans-serif;padding:32px;color:#111}h1{font-size:20px;margin-bottom:4px}p{color:#666;font-size:12px;margin-bottom:20px}table{width:100%;border-collapse:collapse}th{background:#060B14;color:#fff;padding:9px 10px;text-align:left;font-size:11px;letter-spacing:1px}</style></head><body><h1>📋 AGENDA RIO NOVO — ARARAAZUL</h1><p>Excelência em Movimento · Emitido em ${new Date().toLocaleDateString('pt-BR')} ${new Date().toLocaleTimeString('pt-BR')}</p><table><thead><tr><th>#</th><th>TAREFA</th><th>RESPONSÁVEL</th><th>DATA</th><th>STATUS</th><th>PRIORIDADE</th><th>OBS</th></tr></thead><tbody>${rows}</tbody></table></body></html>`);
   w.document.close(); w.print();
-  toast('✓ Abrindo PDF','ok');
+  toast('Abrindo PDF','ok');
 }
 
-/* CALENDÁRIO */
+/* CALENDARIO */
 function navCal(d){calMes+=d;if(calMes>11){calMes=0;calAno++;}if(calMes<0){calMes=11;calAno--;}renderCal();}
 function calHoje(){calAno=new Date().getFullYear();calMes=new Date().getMonth();renderCal();}
 function renderCal(){
-  const meses=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const meses=['Janeiro','Fevereiro','Marco','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
   document.getElementById('cal-title').textContent=`${meses[calMes]} ${calAno}`;
   const dados=get();
   const hoje=new Date(); hoje.setHours(0,0,0,0);
@@ -576,7 +588,7 @@ function renderCal(){
   document.getElementById('cal-grid').innerHTML=html;
 }
 
-/* GRÁFICOS */
+/* GRAFICOS */
 function renderCharts(){
   const dados=get();
   // Status
@@ -584,16 +596,16 @@ function renderCharts(){
   dados.forEach(i=>ss[i.status]=(ss[i.status]||0)+1);
   const maxS=Math.max(...Object.values(ss),1);
   document.getElementById('chart-status').innerHTML=
-    [['pend','⏳ Pendente','#FFB800'],['prog','⚙️ Andamento','#0066FF'],['conc','✅ Concluído','#00D4A0'],['canc','❌ Cancelado','#FF3B5C']]
+    [['pend','Pendente','#FFB800'],['prog','Andamento','#0066FF'],['conc','Concluido','#00D4A0'],['canc','Cancelado','#FF3B5C']]
     .map(([k,l,c])=>`<div class="bar-item"><div class="bar-label">${l}</div><div class="bar-track"><div class="bar-fill" style="width:${ss[k]/maxS*100}%;background:${c}"><span>${ss[k]||0}</span></div></div><div class="bar-count" style="color:${c}">${ss[k]||0}</div></div>`).join('');
   // Prio
   const pp={low:0,med:0,high:0};
   dados.forEach(i=>pp[i.prio]=(pp[i.prio]||0)+1);
   const maxP=Math.max(...Object.values(pp),1);
   document.getElementById('chart-prio').innerHTML=
-    [['low','🟢 Baixa','#00D4A0'],['med','🟡 Média','#FFB800'],['high','🔴 Urgente','#FF3B5C']]
+    [['low','Baixa','#00D4A0'],['med','Media','#FFB800'],['high','Urgente','#FF3B5C']]
     .map(([k,l,c])=>`<div class="bar-item"><div class="bar-label">${l}</div><div class="bar-track"><div class="bar-fill" style="width:${pp[k]/maxP*100}%;background:${c}"><span>${pp[k]||0}</span></div></div><div class="bar-count" style="color:${c}">${pp[k]||0}</div></div>`).join('');
-  // Responsável
+  // Responsavel
   const rr={};
   dados.forEach(i=>{const r=i.resp||'N/A';rr[r]=(rr[r]||0)+1;});
   const sortR=Object.entries(rr).sort((a,b)=>b[1]-a[1]).slice(0,6);
@@ -615,10 +627,10 @@ function renderCharts(){
         <circle cx="60" cy="60" r="${r}" fill="none" stroke="#FFB800" stroke-width="12" stroke-dasharray="${d3} ${circ-d3}" stroke-dashoffset="${-(d1+d2)}"/>
         <circle cx="60" cy="60" r="${r}" fill="none" stroke="#FF3B5C" stroke-width="12" stroke-dasharray="${d4} ${circ-d4}" stroke-dashoffset="${-(d1+d2+d3)}"/>
       </svg>
-      <div class="donut-center"><div class="donut-num">${concP}%</div><div class="donut-sub">Concluído</div></div>
+      <div class="donut-center"><div class="donut-num">${concP}%</div><div class="donut-sub">Concludo</div></div>
     </div>
     <div class="legend">
-      ${[['#00D4A0','Concluído',ss.conc||0],['#0066FF','Andamento',ss.prog||0],['#FFB800','Pendente',ss.pend||0],['#FF3B5C','Cancelado',ss.canc||0]]
+      ${[['#00D4A0','Concluido',ss.conc||0],['#0066FF','Andamento',ss.prog||0],['#FFB800','Pendente',ss.pend||0],['#FF3B5C','Cancelado',ss.canc||0]]
         .map(([c,l,n])=>`<div class="leg-item"><div class="leg-dot" style="background:${c}"></div><span style="flex:1;color:var(--muted)">${l}</span><strong>${n}</strong></div>`).join('')}
     </div>`;
 }
@@ -657,11 +669,11 @@ function render(){
   let lastDate='',html='';
   filtrados.forEach(item=>{
     const d=dias(item.data);
-    const dLabel=d<0?`Vencido há ${Math.abs(d)}d`:d===0?'HOJE':d===1?'AMANHÃ':`Em ${d}d`;
+    const dLabel=d<0?('Vencido '+Math.abs(d)+'d'):d===0?'HOJE':d===1?'AMANHA':('Em '+d+'d');
     const dCls=d<0?'p-urg':d===0?'p-hj':d===1?'p-am':'';
     const sc=item.status==='conc'?'#3D5A7A':PC[item.prio]||'#00D4A0';
     const stColor=SC[item.status]||'#FFB800';
-    const msg=encodeURIComponent(`📋 AVISO OPERACIONAL — ARARAAZUL\n\nTAREFA: ${item.tarefa}\nRESPONSÁVEL: ${item.resp||'—'}\n${item.obs?'DETALHE: '+item.obs+'\n':''}PRAZO: ${fmt(item.data)}\nSTATUS: ${SL[item.status]||'—'}\n\nSistema Agenda Rio Novo`);
+    const msg=encodeURIComponent(`AVISO OPERACIONAL - ARARAAZUL\n\nTAREFA: ${item.tarefa}\nRESPONSÁVEL: ${item.resp||'—'}\n${item.obs?'DETALHE: '+item.obs+'\n':''}PRAZO: ${fmt(item.data)}\nSTATUS: ${SL[item.status]||'—'}\n\nSistema Agenda Rio Novo`);
     const link=`https://wa.me/${item.fone}?text=${msg}`;
     const idx=item.origIdx;
 
@@ -677,7 +689,7 @@ function render(){
         <div class="cname">${item.tarefa}</div>
         <div class="meta">
           <span class="pill ${dCls}">${dLabel}</span>
-          <span class="pill p-resp">👤 ${item.resp||'N/A'}</span>
+          <span class="pill p-resp">Resp: ${item.resp||'N/A'}</span>
           <span class="pill" style="border-color:${stColor}33;color:${stColor};background:${stColor}18">${SL[item.status]||'—'}</span>
           <span class="pill ${item.prio==='high'?'p-hi':item.prio==='med'?'p-med':'p-low'}">${PL[item.prio]}</span>
         </div>
